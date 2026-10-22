@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { feeRecords, InsertUser, NewFeeRecord, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -84,8 +84,32 @@ export async function getUserByOpenId(openId: string) {
   }
 
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
-
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function listFeeRecords() {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  return db.select().from(feeRecords).orderBy(desc(feeRecords.createdAt), desc(feeRecords.id));
+}
+
+export async function createFeeRecord(input: Omit<NewFeeRecord, "id" | "createdAt" | "updatedAt">) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.insert(feeRecords).values(input);
+}
+
+export async function updateFeeRecord(
+  id: number,
+  input: Pick<NewFeeRecord, "studentName" | "rollNumber" | "course" | "amount" | "status">,
+) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.update(feeRecords).set(input).where(eq(feeRecords.id, id));
+}
+
+export async function deleteFeeRecord(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database is not available");
+  await db.delete(feeRecords).where(eq(feeRecords.id, id));
+}
