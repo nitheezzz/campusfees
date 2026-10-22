@@ -281,7 +281,7 @@ export default function Home() {
             <div className="fee-register-footer"><span>Showing {filteredRecords.length} of {records.length} records</span><span><Check size={14} /> Public and self-reported</span></div>
           </section>
         </section>
-        <footer className="fee-footer"><span>Campus Ledger <span>·</span> Public student fee register</span><span>Amounts shown in Indian rupees (INR)</span></footer>
+        <footer className="fee-footer"><span>Campus Ledger <span>·</span> Public student fee register</span><span>Amounts shown in Indian rupees (INR)</span><span>© 2026 Nitheezzz. All rights reserved.</span></footer>
       </main>
 
       <AlertDialog open={recordToDelete !== null} onOpenChange={open => { if (!open && !deleteRecord.isPending) setRecordToDelete(null); }}>
