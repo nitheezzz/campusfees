@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, staffProcedure } from "./_core/trpc";
+import { isAuthorizedStaff } from "./_core/permissions";
 import * as db from "./db";
 
 const feeFields = {
@@ -34,6 +35,8 @@ export const appRouter = router({
   feeRecords: router({
     // The owner explicitly chose a public roster: this exposes every listed field to visitors.
     list: publicProcedure.query(() => db.listFeeRecords()),
+    // Reveal only whether this session may manage records; mutations still enforce staff authorization.
+    canManage: publicProcedure.query(({ ctx }) => isAuthorizedStaff(ctx.user?.email)),
     // New submissions are intentionally anonymous and self-reported; this is not payment verification.
     create: publicProcedure.input(feeInput).mutation(async ({ input }) => {
       await db.createFeeRecord({
@@ -42,7 +45,7 @@ export const appRouter = router({
       });
       return { success: true } as const;
     }),
-    // Mutation of existing records remains staff-only; no edit or delete controls are shown publicly.
+    // Existing records can only be modified by staff explicitly authorized by FEE_ADMIN_EMAILS.
     update: staffProcedure
       .input(recordId.extend(feeFields).strict())
       .mutation(async ({ input }) => {

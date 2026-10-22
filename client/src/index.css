@@ -148,6 +148,7 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], sel
 .fee-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; border: 1px solid transparent; border-radius: 7px; color: #68809e; background: transparent; }
 .fee-icon-button:hover { color: #2353aa; background: #eff5ff; border-color: #dce8fc; }
 .fee-icon-button.fee-delete-button:hover { color: #c43b3b; background: #fff1f0; border-color: #f6dbd8; }
+.fee-table th.fee-actions-heading { padding-right: 20px; text-align: right; }
 .fee-register-footer { min-height: 41px; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 18px; border-top: 1px solid #edf0f5; color: #8b98a9; font-size: 10px; }
 .fee-register-footer span:last-child { display: inline-flex; align-items: center; gap: 5px; color: #7187a5; }
 .fee-register-footer svg { color: #4c8d70; }
