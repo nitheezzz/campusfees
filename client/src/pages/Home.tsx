@@ -4,12 +4,9 @@ import {
   Check,
   CircleDollarSign,
   Loader2,
-  LogIn,
-  LogOut,
   Pencil,
   Plus,
   Search,
-  ShieldCheck,
   Trash2,
   Users,
   X,
@@ -26,8 +23,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
-import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 
 type FeeStatus = "Paid" | "Pending";
@@ -61,18 +56,15 @@ function BrandMark({ className = "" }: { className?: string }) {
 
 export default function Home() {
   const utils = trpc.useUtils();
-  const { user, isAuthenticated, loading: authLoading, logout } = useAuth();
   const [form, setForm] = useState<FeeForm>(emptyForm);
   const [editingRecordId, setEditingRecordId] = useState<number | null>(null);
   const [recordToDelete, setRecordToDelete] = useState<FeeRecord | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"All" | FeeStatus>("All");
   const recordsQuery = trpc.feeRecords.list.useQuery(undefined, { retry: false });
-  const staffAccessQuery = trpc.feeRecords.canManage.useQuery(undefined, { retry: false });
   const createRecord = trpc.feeRecords.create.useMutation();
   const updateRecord = trpc.feeRecords.update.useMutation();
   const deleteRecord = trpc.feeRecords.delete.useMutation();
-  const canManage = isAuthenticated && staffAccessQuery.data === true;
   const records = (recordsQuery.data ?? []) as FeeRecord[];
   const formBusy = createRecord.isPending || updateRecord.isPending;
 
@@ -156,23 +148,6 @@ export default function Home() {
     }
   };
 
-  const handleStaffLogin = () => {
-    try {
-      startLogin();
-    } catch {
-      toast.error("Staff sign-in is unavailable right now.");
-    }
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      await utils.feeRecords.canManage.invalidate();
-    } catch {
-      toast.error("Could not sign out. Please try again.");
-    }
-  };
-
   return (
     <>
       <main className="fee-app">
@@ -181,25 +156,7 @@ export default function Home() {
             <BrandMark className="fee-brand-mark" />
             <span><strong>Campus Ledger</strong><small>STUDENT FEE MANAGEMENT</small></span>
           </a>
-          <div className="fee-user-tools">
-            {isAuthenticated ? (
-              <>
-                {canManage ? (
-                  <span className="fee-staff-label"><ShieldCheck size={14} /> STAFF ACCESS</span>
-                ) : (
-                  <span className="fee-user-name">{user?.name || user?.email || "Signed in"}</span>
-                )}
-                <button type="button" className="fee-signout" onClick={() => void handleLogout()} aria-label="Sign out">
-                  <LogOut size={15} /><span>Sign out</span>
-                </button>
-              </>
-            ) : (
-              <button type="button" className="fee-secondary-button fee-signin-button" onClick={handleStaffLogin} disabled={authLoading}>
-                <LogIn size={15} /><span>Staff sign in</span>
-              </button>
-            )}
-            <span className="fee-public-label"><Users size={15} /> PUBLIC LEDGER</span>
-          </div>
+          <span className="fee-public-label"><Users size={15} /> PUBLIC LEDGER</span>
         </header>
 
         <section className="fee-page-heading">
@@ -212,7 +169,7 @@ export default function Home() {
         </section>
 
         <div className="fee-public-disclosure" role="note">
-          <strong>Public information:</strong> student names, roll numbers, courses, fee amounts, and payment statuses on this page are visible to anyone. New entries are self-reported and are not verified against an actual payment.
+          <strong>Public information:</strong> student names, roll numbers, courses, fee amounts, and payment statuses are visible to anyone. Anyone can add, edit, or delete entries. Payment information is self-reported and not independently verified.
         </div>
 
         <section className="fee-summary-grid" aria-label="Fee summary">
@@ -240,7 +197,7 @@ export default function Home() {
           <aside className="fee-panel fee-entry-panel" id="fee-entry-panel">
             <div className="fee-panel-heading">
               <div>
-                <p className="fee-eyebrow">{editingRecordId === null ? "PUBLIC SUBMISSION" : "STAFF RECORD UPDATE"}</p>
+                <p className="fee-eyebrow">{editingRecordId === null ? "PUBLIC SUBMISSION" : "PUBLIC RECORD UPDATE"}</p>
                 <h2>{editingRecordId === null ? "Add a fee entry" : "Edit fee entry"}</h2>
               </div>
               {editingRecordId !== null && <span className="fee-editing-tag"><Pencil size={12} /> Editing #{editingRecordId}</span>}
@@ -290,7 +247,7 @@ export default function Home() {
             ) : (
               <div className="fee-table-wrap">
                 <table className="fee-table">
-                  <thead><tr><th>ID</th><th>Student</th><th>Roll number</th><th>Course</th><th>Fee amount</th><th>Status</th>{canManage && <th className="fee-actions-heading">Actions</th>}</tr></thead>
+                  <thead><tr><th>ID</th><th>Student</th><th>Roll number</th><th>Course</th><th>Fee amount</th><th>Status</th><th className="fee-actions-heading">Actions</th></tr></thead>
                   <tbody>{filteredRecords.map(record => (
                     <tr key={record.id}>
                       <td className="fee-id-cell">{record.id.toString().padStart(3, "0")}</td>
@@ -299,18 +256,16 @@ export default function Home() {
                       <td>{record.course}</td>
                       <td className="fee-amount-cell">{formatMoney(record.amount)}</td>
                       <td><span className={`fee-status-pill ${record.status === "Paid" ? "is-paid" : "is-pending"}`}><span />{record.status}</span></td>
-                      {canManage && (
-                        <td>
-                          <div className="fee-row-actions">
-                            <button type="button" className="fee-icon-button" aria-label={`Edit ${record.studentName}`} title="Edit record" onClick={() => beginEditing(record)}>
-                              <Pencil size={15} />
-                            </button>
-                            <button type="button" className="fee-icon-button fee-delete-button" aria-label={`Delete ${record.studentName}`} title="Delete record" onClick={() => setRecordToDelete(record)}>
-                              <Trash2 size={15} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                      <td>
+                        <div className="fee-row-actions">
+                          <button type="button" className="fee-icon-button" aria-label={`Edit ${record.studentName}`} title="Edit record" onClick={() => beginEditing(record)}>
+                            <Pencil size={15} />
+                          </button>
+                          <button type="button" className="fee-icon-button fee-delete-button" aria-label={`Delete ${record.studentName}`} title="Delete record" onClick={() => setRecordToDelete(record)}>
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}</tbody>
                 </table>
