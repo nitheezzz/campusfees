@@ -32,14 +32,17 @@ export const appRouter = router({
     }),
   }),
   feeRecords: router({
-    list: staffProcedure.query(() => db.listFeeRecords()),
-    create: staffProcedure.input(feeInput).mutation(async ({ input }) => {
+    // The owner explicitly chose a public roster: this exposes every listed field to visitors.
+    list: publicProcedure.query(() => db.listFeeRecords()),
+    // New submissions are intentionally anonymous and self-reported; this is not payment verification.
+    create: publicProcedure.input(feeInput).mutation(async ({ input }) => {
       await db.createFeeRecord({
         ...input,
         amount: input.amount.toFixed(2),
       });
       return { success: true } as const;
     }),
+    // Mutation of existing records remains staff-only; no edit or delete controls are shown publicly.
     update: staffProcedure
       .input(recordId.extend(feeFields).strict())
       .mutation(async ({ input }) => {

@@ -78,6 +78,7 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], sel
 .fee-brand small { display: block; margin-top: 3px; color: #7a8799; font-size: 9px; letter-spacing: .14em; font-weight: 700; }
 .fee-user-tools { display: flex; align-items: center; gap: 17px; }
 .fee-staff-label { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; color: #2450a5; border: 1px solid #d8e5fc; border-radius: 20px; background: #f2f7ff; font-size: 10px; font-weight: 750; letter-spacing: .06em; }
+.fee-public-label { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; color: #2450a5; border: 1px solid #d8e5fc; border-radius: 20px; background: #f2f7ff; font-size: 10px; font-weight: 750; letter-spacing: .07em; }
 .fee-user-name { color: #56647a; font-size: 13px; max-width: 210px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fee-signout { display: inline-flex; align-items: center; gap: 7px; height: 37px; padding: 0 12px; border: 1px solid #dce4ef; border-radius: 8px; background: #fff; color: #56647a; font-size: 12px; font-weight: 650; }
 .fee-signout:hover { background: #f8fafc; color: #183c80; }
@@ -88,6 +89,8 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], sel
 .fee-subheading { margin: 9px 0 0; color: #748196; font-size: 14px; }
 .fee-heading-note { display: flex; align-items: center; gap: 8px; color: #58708e; font-size: 12px; padding: 9px 12px; border: 1px solid #e1e8f1; border-radius: 9px; background: #fff; white-space: nowrap; }
 .fee-heading-note svg { color: #3768c7; }
+.fee-public-disclosure { margin: 0 0 15px; padding: 12px 15px; border: 1px solid #ecd9a9; border-left: 3px solid #d69a32; border-radius: 9px; background: #fffbf1; color: #715d38; font-size: 11px; line-height: 1.6; }
+.fee-public-disclosure strong { color: #634b1f; }
 .fee-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
 .fee-summary-card { position: relative; min-height: 136px; padding: 18px 20px; background: #fff; border: 1px solid #e3e9f2; border-radius: 13px; box-shadow: 0 2px 6px rgba(21, 44, 83, .025); }
 .fee-summary-icon { width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; color: #2254b5; background: #eaf1ff; border-radius: 9px; }
