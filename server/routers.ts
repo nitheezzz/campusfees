@@ -4,22 +4,33 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+type FeeStatus = "Paid" | "Pending" | "7.5 Reservation";
 
 const feeFields = {
   studentName: z.string().trim().min(1, "Student name is required").max(150),
   rollNumber: z.string().trim().min(1, "Roll number is required").max(80),
+  team: z.string().trim().max(100).default(""),
   course: z.string().trim().min(1, "Course is required").max(150),
   amount: z
     .number()
     .finite()
-    .positive("Fee amount must be greater than zero")
+    .nonnegative("Fee amount cannot be negative")
     .max(9_999_999_999.99)
     .refine(value => Math.abs(value * 100 - Math.round(value * 100)) < 0.000001, "Fee amount may have at most two decimal places"),
-  status: z.enum(["Paid", "Pending"]),
+  status: z.enum(["Paid", "Pending", "7.5 Reservation"]),
 };
 
-const feeInput = z.object(feeFields).strict();
+const feeAmountMatchesStatus = (input: { amount: number; status: FeeStatus }) =>
+  input.status === "7.5 Reservation" ? input.amount === 0 : input.amount > 0;
+const feeInput = z.object(feeFields).strict().refine(feeAmountMatchesStatus, {
+  path: ["amount"],
+  message: "Only 7.5 Reservation records can have a zero fee amount.",
+});
 const recordId = z.object({ id: z.number().int().positive() }).strict();
+const updateFeeInput = recordId.extend(feeFields).strict().refine(feeAmountMatchesStatus, {
+  path: ["amount"],
+  message: "Only 7.5 Reservation records can have a zero fee amount.",
+});
 
 export const appRouter = router({
   system: systemRouter,
@@ -44,7 +55,7 @@ export const appRouter = router({
     }),
     // The public ledger allows any visitor to edit an existing self-reported entry.
     update: publicProcedure
-      .input(recordId.extend(feeFields).strict())
+      .input(updateFeeInput)
       .mutation(async ({ input }) => {
         const { id, ...fields } = input;
         await db.updateFeeRecord(id, {

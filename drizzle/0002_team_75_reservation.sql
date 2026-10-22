@@ -1,0 +1,2 @@
+ALTER TABLE `fee_records` MODIFY COLUMN `status` enum('Paid','Pending','7.5 Reservation') NOT NULL DEFAULT 'Pending';--> statement-breakpoint
+ALTER TABLE `fee_records` ADD `team` varchar(100) DEFAULT '' NOT NULL;

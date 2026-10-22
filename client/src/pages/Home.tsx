@@ -25,11 +25,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 
-type FeeStatus = "Paid" | "Pending";
+type FeeStatus = "Paid" | "Pending" | "7.5 Reservation";
 type FeeRecord = {
   id: number;
   studentName: string;
   rollNumber: string;
+  team: string;
   course: string;
   amount: string;
   status: FeeStatus;
@@ -39,6 +40,7 @@ type FeeForm = Omit<FeeRecord, "id" | "amount"> & { amount: string };
 const emptyForm: FeeForm = {
   studentName: "",
   rollNumber: "",
+  team: "",
   course: "",
   amount: "",
   status: "Paid",
@@ -72,7 +74,7 @@ export default function Home() {
     const term = search.trim().toLocaleLowerCase();
     return records.filter(record => {
       const matchesStatus = statusFilter === "All" || record.status === statusFilter;
-      const matchesSearch = !term || [record.studentName, record.rollNumber, record.course]
+      const matchesSearch = !term || [record.studentName, record.rollNumber, record.team ?? "", record.course]
         .some(value => value.toLocaleLowerCase().includes(term));
       return matchesStatus && matchesSearch;
     });
@@ -88,12 +90,13 @@ export default function Home() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const amount = Number(form.amount);
+    const isReservation = form.status === "7.5 Reservation";
+    const amount = isReservation ? 0 : Number(form.amount);
     if (!form.studentName.trim() || !form.rollNumber.trim() || !form.course.trim()) {
       toast.error("Complete all student details before saving.");
       return;
     }
-    if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) {
+    if (!isReservation && (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100)) {
       toast.error("Enter a fee amount greater than zero with up to two decimal places.");
       return;
     }
@@ -101,6 +104,7 @@ export default function Home() {
     const fields = {
       studentName: form.studentName.trim(),
       rollNumber: form.rollNumber.trim(),
+      team: form.team.trim(),
       course: form.course.trim(),
       amount,
       status: form.status,
@@ -127,6 +131,7 @@ export default function Home() {
     setForm({
       studentName: record.studentName,
       rollNumber: record.rollNumber,
+      team: record.team ?? "",
       course: record.course,
       amount: record.amount,
       status: record.status,
@@ -169,7 +174,7 @@ export default function Home() {
         </section>
 
         <div className="fee-public-disclosure" role="note">
-          <strong>Public information:</strong> student names, roll numbers, courses, fee amounts, and payment statuses are visible to anyone. Anyone can add, edit, or delete entries. Payment information is self-reported and not independently verified.
+          <strong>Public information:</strong> student names, SPR numbers, teams, courses, fee amounts, and statuses are visible to anyone. Anyone can add, edit, or delete entries. Payment information is self-reported and not independently verified.
         </div>
 
         <section className="fee-summary-grid" aria-label="Fee summary">
@@ -204,11 +209,12 @@ export default function Home() {
             </div>
             <form className="fee-form" onSubmit={handleSubmit}>
               <label>Student name<input autoComplete="off" maxLength={150} placeholder="e.g. Asha Sharma" value={form.studentName} onChange={event => setForm({ ...form, studentName: event.target.value })} required /></label>
-              <label>Roll number<input autoComplete="off" maxLength={80} placeholder="e.g. 24CS018" value={form.rollNumber} onChange={event => setForm({ ...form, rollNumber: event.target.value })} required /></label>
+              <label>SPR No.<input autoComplete="off" maxLength={80} placeholder="e.g. 24CS018" value={form.rollNumber} onChange={event => setForm({ ...form, rollNumber: event.target.value })} required /></label>
+              <label>Team (optional)<input autoComplete="off" maxLength={100} placeholder="e.g. Team A" value={form.team} onChange={event => setForm({ ...form, team: event.target.value })} /></label>
               <label>Course<input autoComplete="off" maxLength={150} placeholder="e.g. B.Sc. Computer Science" value={form.course} onChange={event => setForm({ ...form, course: event.target.value })} required /></label>
               <div className="fee-form-row">
-                <label>Fee amount (INR)<div className="fee-amount-input"><span>₹</span><input type="number" min="0.01" step="0.01" inputMode="decimal" placeholder="0.00" value={form.amount} onChange={event => setForm({ ...form, amount: event.target.value })} required /></div></label>
-                <label>Payment status<select value={form.status} onChange={event => setForm({ ...form, status: event.target.value as FeeStatus })}><option value="Paid">Paid</option><option value="Pending">Pending</option></select></label>
+                <label>Fee amount (INR)<div className="fee-amount-input"><span>₹</span><input type="number" min={form.status === "7.5 Reservation" ? 0 : 0.01} step="0.01" inputMode="decimal" placeholder="0.00" value={form.status === "7.5 Reservation" ? "0" : form.amount} onChange={event => setForm({ ...form, amount: event.target.value })} disabled={form.status === "7.5 Reservation"} required={form.status !== "7.5 Reservation"} /></div></label>
+                <label>Fee status<select value={form.status} onChange={event => { const status = event.target.value as FeeStatus; setForm({ ...form, status, amount: status === "7.5 Reservation" ? "0" : form.status === "7.5 Reservation" ? "" : form.amount }); }}><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="7.5 Reservation">7.5 Reservation</option></select></label>
               </div>
               <div className="fee-form-actions">
                 <Button type="submit" className="fee-primary-button" disabled={formBusy}>
@@ -229,8 +235,8 @@ export default function Home() {
             <div className="fee-panel-heading fee-records-heading">
               <div><p className="fee-eyebrow">OPEN COLLECTION REGISTER</p><h2>Fee records <span className="fee-count">{records.length}</span></h2></div>
               <div className="fee-filter-row">
-                <label className="fee-search"><Search size={16} /><input aria-label="Search students" placeholder="Search name, roll no. or course" value={search} onChange={event => setSearch(event.target.value)} /></label>
-                <select aria-label="Filter by payment status" className="fee-status-filter" value={statusFilter} onChange={event => setStatusFilter(event.target.value as "All" | FeeStatus)}><option value="All">All statuses</option><option value="Paid">Paid</option><option value="Pending">Pending</option></select>
+                <label className="fee-search"><Search size={16} /><input aria-label="Search students" placeholder="Search name, SPR no., team or course" value={search} onChange={event => setSearch(event.target.value)} /></label>
+                <select aria-label="Filter by fee status" className="fee-status-filter" value={statusFilter} onChange={event => setStatusFilter(event.target.value as "All" | FeeStatus)}><option value="All">All statuses</option><option value="Paid">Paid</option><option value="Pending">Pending</option><option value="7.5 Reservation">7.5 Reservation</option></select>
               </div>
             </div>
 
@@ -247,15 +253,16 @@ export default function Home() {
             ) : (
               <div className="fee-table-wrap">
                 <table className="fee-table">
-                  <thead><tr><th>ID</th><th>Student</th><th>Roll number</th><th>Course</th><th>Fee amount</th><th>Status</th><th className="fee-actions-heading">Actions</th></tr></thead>
+                  <thead><tr><th>ID</th><th>Student</th><th>SPR No.</th><th>Team</th><th>Course</th><th>Fee amount</th><th>Status</th><th className="fee-actions-heading">Actions</th></tr></thead>
                   <tbody>{filteredRecords.map(record => (
                     <tr key={record.id}>
                       <td className="fee-id-cell">{record.id.toString().padStart(3, "0")}</td>
                       <td className="fee-student-cell">{record.studentName}</td>
                       <td>{record.rollNumber}</td>
+                      <td>{record.team?.trim() || "—"}</td>
                       <td>{record.course}</td>
                       <td className="fee-amount-cell">{formatMoney(record.amount)}</td>
-                      <td><span className={`fee-status-pill ${record.status === "Paid" ? "is-paid" : "is-pending"}`}><span />{record.status}</span></td>
+                      <td><span className={`fee-status-pill ${record.status === "Paid" ? "is-paid" : record.status === "Pending" ? "is-pending" : "is-reservation"}`}><span />{record.status}</span></td>
                       <td>
                         <div className="fee-row-actions">
                           <button type="button" className="fee-icon-button" aria-label={`Edit ${record.studentName}`} title="Edit record" onClick={() => beginEditing(record)}>

@@ -131,7 +131,7 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], sel
 .fee-search input { height: 33px; border: 0; padding: 0; font-size: 11px; box-shadow: none !important; }
 .fee-status-filter { width: auto; min-width: 105px; height: 36px; padding: 0 26px 0 9px; color: #506078; font-size: 11px; }
 .fee-table-wrap { width: 100%; overflow-x: auto; border-top: 1px solid #edf0f5; }
-.fee-table { width: 100%; min-width: 760px; border-collapse: collapse; text-align: left; }
+.fee-table { width: 100%; min-width: 850px; border-collapse: collapse; text-align: left; }
 .fee-table th { height: 38px; padding: 0 11px; background: #f7f9fc; color: #8290a3; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; font-weight: 750; white-space: nowrap; }
 .fee-table th:first-child, .fee-table td:first-child { padding-left: 20px; }
 .fee-table td { height: 56px; padding: 8px 11px; color: #58677d; border-bottom: 1px solid #eef1f5; font-size: 11px; white-space: nowrap; }
@@ -144,6 +144,7 @@ button:not(:disabled), [role="button"]:not([aria-disabled="true"]), a[href], sel
 .fee-status-pill > span { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .fee-status-pill.is-paid { color: #21805b; background: #eaf7f0; }
 .fee-status-pill.is-pending { color: #a86c19; background: #fff5e4; }
+.fee-status-pill.is-reservation { color: #6741a5; background: #f2ecfc; }
 .fee-row-actions { display: flex; justify-content: end; gap: 4px; }
 .fee-icon-button { display: inline-flex; align-items: center; justify-content: center; width: 29px; height: 29px; padding: 0; border: 1px solid transparent; border-radius: 7px; color: #68809e; background: transparent; }
 .fee-icon-button:hover { color: #2353aa; background: #eff5ff; border-color: #dce8fc; }

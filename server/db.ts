@@ -101,7 +101,7 @@ export async function createFeeRecord(input: Omit<NewFeeRecord, "id" | "createdA
 
 export async function updateFeeRecord(
   id: number,
-  input: Pick<NewFeeRecord, "studentName" | "rollNumber" | "course" | "amount" | "status">,
+  input: Pick<NewFeeRecord, "studentName" | "rollNumber" | "team" | "course" | "amount" | "status">,
 ) {
   const db = await getDb();
   if (!db) throw new Error("Database is not available");

@@ -23,9 +23,10 @@ export const feeRecords = mysqlTable("fee_records", {
   id: int("id").autoincrement().primaryKey(),
   studentName: varchar("studentName", { length: 150 }).notNull(),
   rollNumber: varchar("rollNumber", { length: 80 }).notNull(),
+  team: varchar("team", { length: 100 }).notNull().default(""),
   course: varchar("course", { length: 150 }).notNull(),
   amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  status: mysqlEnum("status", ["Paid", "Pending"]).default("Pending").notNull(),
+  status: mysqlEnum("status", ["Paid", "Pending", "7.5 Reservation"]).default("Pending").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
