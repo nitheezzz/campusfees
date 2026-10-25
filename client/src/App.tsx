@@ -5,6 +5,10 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import MaintenancePage from "./pages/Maintenance";
+
+// Keep maintenance mode on until the owner explicitly asks to republish.
+const MAINTENANCE_MODE = true;
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -24,6 +28,14 @@ function Router() {
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
 function App() {
+  if (MAINTENANCE_MODE) {
+    return (
+      <ErrorBoundary>
+        <MaintenancePage />
+      </ErrorBoundary>
+    );
+  }
+
   return (
     <ErrorBoundary>
       <ThemeProvider
