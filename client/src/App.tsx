@@ -7,8 +7,8 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import MaintenancePage from "./pages/Maintenance";
 
-// Keep maintenance mode on until the owner explicitly asks to republish.
-const MAINTENANCE_MODE = true;
+// Enable only during a planned maintenance window.
+const MAINTENANCE_MODE = false;
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
